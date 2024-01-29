@@ -1,7 +1,7 @@
 import customtkinter as ctk
-
+from dialog import CustomDialog
 class ToDoElement(ctk.CTkFrame):
-    def __init__(self, master, text, delete_callback, **kwargs):
+    def __init__(self, master, text, delete_callback, edit_callback, **kwargs):
         super().__init__(master, **kwargs)
 
         self.checked_var = ctk.BooleanVar(value=False)
@@ -11,6 +11,9 @@ class ToDoElement(ctk.CTkFrame):
 
         self.label = ctk.CTkLabel(self, height=20, text=text, font=("Arial", 12))
         self.label.pack(side='left')
+
+        self.edit_button = ctk.CTkButton(self, height=30, width=50, text="Edit", command=lambda: edit_callback(self))
+        self.edit_button.pack(side='right', padx=(10, 0))
 
         self.delete_button = ctk.CTkButton(self, height=30, width=50, text="Delete", command=lambda: delete_callback(self))
         self.delete_button.pack(side='right')
@@ -27,7 +30,7 @@ class MyFrame(ctk.CTkScrollableFrame):
         todo_items = ["Task 1", "Task 2", "Task 3"]
 
         for index, item in enumerate(todo_items):
-            todo_element = ToDoElement(self, text=item, delete_callback=self.delete_task)
+            todo_element = ToDoElement(self, text=item, delete_callback=self.delete_task, edit_callback=self.edit_task)
             todo_element.grid(row=index, column=0, padx=20, pady=5, sticky="ew")
             self.todo_elements.append(todo_element)
 
@@ -37,6 +40,13 @@ class MyFrame(ctk.CTkScrollableFrame):
     def delete_task(self, todo_element):
         self.todo_elements.remove(todo_element)
         todo_element.destroy()
+
+    def edit_task(self, todo_element):
+        # Open a dialog for editing the task
+        edit_dialog = CustomDialog(text="Edit task description:", title="Edit Task", text_value=todo_element.label.cget('text'))
+        edited_text = edit_dialog.get_input()
+        if edited_text:
+            todo_element.label.configure(text=edited_text)
 
 class App(ctk.CTk):
     def __init__(self):
@@ -55,7 +65,7 @@ class App(ctk.CTk):
         task_dialog = ctk.CTkInputDialog(text="Type task description:", title="Add new task")
         new_task_text = task_dialog.get_input()
         if new_task_text:
-            new_todo_element = ToDoElement(self.my_frame, text=new_task_text, delete_callback=self.my_frame.delete_task)
+            new_todo_element = ToDoElement(self.my_frame, text=new_task_text, delete_callback=self.my_frame.delete_task, edit_callback=self.my_frame.edit_task)
             new_todo_element.grid(row=len(self.my_frame.todo_elements), column=0, padx=20, pady=5, sticky="ew")
             self.my_frame.todo_elements.append(new_todo_element)
 
